@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# First task is to ensure that the actions are being performed by the root user
+if [ "$(id -u)" -ne 0 ]; then
+    echo "This action can only be performed by administrator"
+    echo "To run this script enter as root user"
+    exit 1
+fi
+
+# Checking the Debian package manager
+if ! command -v apt-get &> /dev/null; then
+    echo "Use Debian Based package manager"
+    exit 1
+fi
+
+# Checking the presence of Spotify
+echo "Searching for the presence of Spotify repo in /etc/apt/sources.list"
+repo_source=$(grep -o -E "deb http://repository.spotify.com stable non-free" /etc/apt/sources.list | wc -l)
+if [ "$repo_source" -eq 0 ]; then
+    echo "You don't have the Spotify repo downloaded on your machine"
+    read -p "Do you want to install the repo? (yes/no) " choice
+
+    if [[ "$choice" =~ ^[Yy](es)?$ ]]; then
+        echo '' | sudo tee -a /etc/apt/sources.list.d/spotify.list
+        echo "##Spotify Client" | sudo tee -a /etc/apt/sources.list.d/spotify.list
+        echo "deb http://repository.spotify.com stable non-free" | sudo tee -a /etc/apt/sources.list.d/spotify.list
+    else
+        echo "Master doesn't want to install the Spotify repo"                             
+        echo "Thank you for wasting my time!"
+    fi
+else
+    echo "Spotify Repo Exists"
+fi
+
+sudo apt-get update
+sudo apt-get install spotify-client
+
+sleep 10
+echo "Congratulations Master on installing Spotify"
+echo -e "I hope you never leave me behind.\nBecause a good script is so hard to find,\nI will take your hand and keep it closer to mine.\nThough I don't need a master, but I am changing my mind."
+echo "Press any key to continue"
+read
